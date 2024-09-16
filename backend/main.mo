@@ -27,7 +27,7 @@ actor {
     private var chatHistory = Buffer.Buffer<Text>(0);
 
     // Function to securely store the API key
-    public shared({ caller }) func setApiKey(key : Text) : async Result.Result<(), Text> {
+    public shared({ caller }) func set_api_key(key : Text) : async Result.Result<(), Text> {
         // In a real-world scenario, you'd want to implement proper authentication here
         // For simplicity, we're allowing any caller to set the key
         apiKeys.put("OPENROUTER_API_KEY", key);
@@ -35,24 +35,24 @@ actor {
     };
 
     // Function to check if API key is set
-    public query func isApiKeySet() : async Bool {
+    public query func get_api_key_status() : async Bool {
         Option.isSome(apiKeys.get("OPENROUTER_API_KEY"))
     };
 
     // Function to add a message to chat history
-    public shared({ caller }) func addToChatHistory(message : Text) : async Nat {
+    public shared({ caller }) func add_to_chat_history(message : Text) : async Nat {
         let index = chatHistory.size();
         chatHistory.add(message);
         index
     };
 
     // Function to get chat history
-    public query func getChatHistory() : async [Text] {
+    public query func get_chat_history() : async [Text] {
         Buffer.toArray(chatHistory)
     };
 
     // Function to clear chat history
-    public shared({ caller }) func clearChatHistory() : async () {
+    public shared({ caller }) func clear_chat_history() : async () {
         chatHistory.clear();
     };
 

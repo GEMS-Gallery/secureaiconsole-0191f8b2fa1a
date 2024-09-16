@@ -29,7 +29,7 @@ let isApiKeySet = false;
 async function checkApiKey() {
   try {
     await initializeBackend();
-    isApiKeySet = await backend.isApiKeySet();
+    isApiKeySet = await backend.get_api_key_status();
     if (!isApiKeySet) {
       document.getElementById('apiKeyForm').style.display = 'block';
       document.getElementById('chatInterface').style.display = 'none';
@@ -51,7 +51,7 @@ async function setApiKey() {
       if (!backend) {
         await initializeBackend();
       }
-      await backend.setApiKey(apiKey);
+      await backend.set_api_key(apiKey);
       isApiKeySet = true;
       document.getElementById('apiKeyForm').style.display = 'none';
       document.getElementById('chatInterface').style.display = 'block';
@@ -67,7 +67,7 @@ async function loadChatHistory() {
     if (!backend) {
       await initializeBackend();
     }
-    chatHistory = await backend.getChatHistory();
+    chatHistory = await backend.get_chat_history();
     displayChatHistory();
   } catch (error) {
     console.error("Error loading chat history:", error);
@@ -93,7 +93,7 @@ async function sendMessage() {
       if (!backend) {
         await initializeBackend();
       }
-      await backend.addToChatHistory(message);
+      await backend.add_to_chat_history(message);
       messageInput.value = '';
       await loadChatHistory();
     } catch (error) {
@@ -108,7 +108,7 @@ async function clearChat() {
     if (!backend) {
       await initializeBackend();
     }
-    await backend.clearChatHistory();
+    await backend.clear_chat_history();
     chatHistory = [];
     displayChatHistory();
   } catch (error) {

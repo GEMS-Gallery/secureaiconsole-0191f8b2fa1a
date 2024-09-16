@@ -1,12 +1,6 @@
-type Result = 
- variant {
-   err: text;
-   ok;
- };
 service : {
-  add_to_chat_history: (text) -> (nat);
-  clear_chat_history: () -> ();
-  get_api_key_status: () -> (bool) query;
-  get_chat_history: () -> (vec text) query;
-  set_api_key: (text) -> (Result);
+  add_message: (text) -> ();
+  clear_messages: () -> ();
+  get_messages: () -> (vec text) query;
+  health_check: () -> (text) query;
 }

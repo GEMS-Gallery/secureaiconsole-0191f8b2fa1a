@@ -1,7 +1,6 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { idlFactory } from "./declarations/backend/backend.did.js";
 
-const PRODUCTION_CANISTER_ID = "6sg3w-vqaaa-aaaab-qao4q-cai"; // Replace with your actual production canister ID
+const PRODUCTION_CANISTER_ID = "6sg3w-vqaaa-aaaab-qao4q-cai";
 const agent = new HttpAgent();
 const canisterId = import.meta.env.VITE_BACKEND_CANISTER_ID || PRODUCTION_CANISTER_ID;
 
@@ -9,13 +8,20 @@ let backend;
 
 async function initializeBackend() {
   if (!canisterId) {
-    throw new Error("Backend canister ID is not set. Please check your environment variables or configuration.");
+    throw new Error("Backend canister ID is not set.");
   }
   try {
-    backend = await Actor.createActor(idlFactory, {
-      agent,
-      canisterId,
-    });
+    backend = Actor.createActor(
+      ({ IDL }) => {
+        return IDL.Service({
+          'health_check': IDL.Func([], [IDL.Text], ['query']),
+          'get_messages': IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+          'add_message': IDL.Func([IDL.Text], [], []),
+          'clear_messages': IDL.Func([], [], []),
+        });
+      },
+      { agent, canisterId }
+    );
   } catch (error) {
     console.error("Failed to initialize backend:", error);
     document.getElementById('errorMessage').textContent = "Failed to connect to the backend. Please check your network connection and try again later.";
@@ -24,50 +30,26 @@ async function initializeBackend() {
 }
 
 let chatHistory = [];
-let isApiKeySet = false;
 
-async function checkApiKey() {
+async function checkBackendHealth() {
   try {
     await initializeBackend();
-    isApiKeySet = await backend.get_api_key_status();
-    if (!isApiKeySet) {
-      document.getElementById('apiKeyForm').style.display = 'block';
-      document.getElementById('chatInterface').style.display = 'none';
-    } else {
-      document.getElementById('apiKeyForm').style.display = 'none';
+    const health = await backend.health_check();
+    if (health === "OK") {
       document.getElementById('chatInterface').style.display = 'block';
       loadChatHistory();
+    } else {
+      throw new Error("Backend health check failed");
     }
   } catch (error) {
-    console.error("Error checking API key:", error);
-    document.getElementById('errorMessage').textContent = "Failed to check API key status. Please try again later.";
-  }
-}
-
-async function setApiKey() {
-  const apiKey = document.getElementById('apiKeyInput').value;
-  if (apiKey) {
-    try {
-      if (!backend) {
-        await initializeBackend();
-      }
-      await backend.set_api_key(apiKey);
-      isApiKeySet = true;
-      document.getElementById('apiKeyForm').style.display = 'none';
-      document.getElementById('chatInterface').style.display = 'block';
-    } catch (error) {
-      console.error("Error setting API key:", error);
-      document.getElementById('errorMessage').textContent = "Failed to set API key. Please try again.";
-    }
+    console.error("Error checking backend health:", error);
+    document.getElementById('errorMessage').textContent = "Failed to connect to the backend. Please try again later.";
   }
 }
 
 async function loadChatHistory() {
   try {
-    if (!backend) {
-      await initializeBackend();
-    }
-    chatHistory = await backend.get_chat_history();
+    chatHistory = await backend.get_messages();
     displayChatHistory();
   } catch (error) {
     console.error("Error loading chat history:", error);
@@ -90,10 +72,7 @@ async function sendMessage() {
   const message = messageInput.value.trim();
   if (message) {
     try {
-      if (!backend) {
-        await initializeBackend();
-      }
-      await backend.add_to_chat_history(message);
+      await backend.add_message(message);
       messageInput.value = '';
       await loadChatHistory();
     } catch (error) {
@@ -105,10 +84,7 @@ async function sendMessage() {
 
 async function clearChat() {
   try {
-    if (!backend) {
-      await initializeBackend();
-    }
-    await backend.clear_chat_history();
+    await backend.clear_messages();
     chatHistory = [];
     displayChatHistory();
   } catch (error) {
@@ -118,11 +94,10 @@ async function clearChat() {
 }
 
 window.onload = () => {
-  checkApiKey().catch(error => {
+  checkBackendHealth().catch(error => {
     console.error("Failed to initialize application:", error);
     document.getElementById('errorMessage').textContent = "Failed to initialize application. Please refresh the page and try again.";
   });
-  document.getElementById('setApiKeyBtn').onclick = setApiKey;
   document.getElementById('sendBtn').onclick = sendMessage;
   document.getElementById('clearBtn').onclick = clearChat;
 };

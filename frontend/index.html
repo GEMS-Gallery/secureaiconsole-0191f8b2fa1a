@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IC Developer Console</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chatBox {
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #messageInput {
+            width: 70%;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>IC Developer Console</h1>
+    
+    <div id="apiKeyForm">
+        <h2>Set API Key</h2>
+        <input type="text" id="apiKeyInput" placeholder="Enter your API key">
+        <button id="setApiKeyBtn">Set API Key</button>
+    </div>
+
+    <div id="chatInterface" style="display: none;">
+        <div id="chatBox"></div>
+        <input type="text" id="messageInput" placeholder="Type your message...">
+        <button id="sendBtn">Send</button>
+        <button id="clearBtn">Clear Chat</button>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+service : {
+  addToChatHistory: (text) -> (nat);
+  clearChatHistory: () -> ();
+  getChatHistory: () -> (vec text) query;
+  isApiKeySet: () -> (bool) query;
+  setApiKey: (text) -> (Result);
+}

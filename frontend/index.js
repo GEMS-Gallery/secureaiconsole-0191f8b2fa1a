@@ -1,16 +1,18 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
+import { idlFactory } from "./declarations/backend/backend.did.js";
 
+const PRODUCTION_CANISTER_ID = "6sg3w-vqaaa-aaaab-qao4q-cai"; // Replace with your actual production canister ID
 const agent = new HttpAgent();
-const canisterId = import.meta.env.VITE_BACKEND_CANISTER_ID;
+const canisterId = import.meta.env.VITE_BACKEND_CANISTER_ID || PRODUCTION_CANISTER_ID;
 
 let backend;
 
 async function initializeBackend() {
   if (!canisterId) {
-    throw new Error("Backend canister ID is not set. Please check your environment variables.");
+    throw new Error("Backend canister ID is not set. Please check your environment variables or configuration.");
   }
   try {
-    backend = await Actor.createActor(canisterId, {
+    backend = await Actor.createActor(idlFactory, {
       agent,
       canisterId,
     });

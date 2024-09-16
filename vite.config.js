@@ -24,7 +24,7 @@ export default defineConfig({
     },
   },
   define: {
-    'process.env.BACKEND_CANISTER_ID': JSON.stringify(process.env.BACKEND_CANISTER_ID),
+    'import.meta.env.VITE_BACKEND_CANISTER_ID': JSON.stringify(process.env.BACKEND_CANISTER_ID),
   },
   optimizeDeps: {
     esbuildOptions: {

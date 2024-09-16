@@ -1,11 +1,14 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
 
 const agent = new HttpAgent();
-const canisterId = process.env.BACKEND_CANISTER_ID;
+const canisterId = import.meta.env.VITE_BACKEND_CANISTER_ID;
 
 let backend;
 
 async function initializeBackend() {
+  if (!canisterId) {
+    throw new Error("Backend canister ID is not set. Please check your environment variables.");
+  }
   try {
     backend = await Actor.createActor(canisterId, {
       agent,
@@ -13,7 +16,8 @@ async function initializeBackend() {
     });
   } catch (error) {
     console.error("Failed to initialize backend:", error);
-    document.getElementById('errorMessage').textContent = "Failed to connect to the backend. Please try again later.";
+    document.getElementById('errorMessage').textContent = "Failed to connect to the backend. Please check your network connection and try again later.";
+    throw error;
   }
 }
 
@@ -42,6 +46,9 @@ async function setApiKey() {
   const apiKey = document.getElementById('apiKeyInput').value;
   if (apiKey) {
     try {
+      if (!backend) {
+        await initializeBackend();
+      }
       await backend.setApiKey(apiKey);
       isApiKeySet = true;
       document.getElementById('apiKeyForm').style.display = 'none';
@@ -55,6 +62,9 @@ async function setApiKey() {
 
 async function loadChatHistory() {
   try {
+    if (!backend) {
+      await initializeBackend();
+    }
     chatHistory = await backend.getChatHistory();
     displayChatHistory();
   } catch (error) {
@@ -78,6 +88,9 @@ async function sendMessage() {
   const message = messageInput.value.trim();
   if (message) {
     try {
+      if (!backend) {
+        await initializeBackend();
+      }
       await backend.addToChatHistory(message);
       messageInput.value = '';
       await loadChatHistory();
@@ -90,6 +103,9 @@ async function sendMessage() {
 
 async function clearChat() {
   try {
+    if (!backend) {
+      await initializeBackend();
+    }
     await backend.clearChatHistory();
     chatHistory = [];
     displayChatHistory();
@@ -100,7 +116,10 @@ async function clearChat() {
 }
 
 window.onload = () => {
-  checkApiKey();
+  checkApiKey().catch(error => {
+    console.error("Failed to initialize application:", error);
+    document.getElementById('errorMessage').textContent = "Failed to initialize application. Please refresh the page and try again.";
+  });
   document.getElementById('setApiKeyBtn').onclick = setApiKey;
   document.getElementById('sendBtn').onclick = sendMessage;
   document.getElementById('clearBtn').onclick = clearChat;

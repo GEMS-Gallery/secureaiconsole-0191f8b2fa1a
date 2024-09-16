@@ -6,10 +6,6 @@ import Buffer "mo:base/Buffer";
 actor {
     private var messages = Buffer.Buffer<Text>(0);
 
-    public query func health_check() : async Text {
-        return "OK";
-    };
-
     public shared({ caller }) func add_message(message : Text) : async () {
         messages.add(message);
     };

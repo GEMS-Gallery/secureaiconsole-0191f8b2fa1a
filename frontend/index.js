@@ -14,7 +14,6 @@ async function initializeBackend() {
     backend = Actor.createActor(
       ({ IDL }) => {
         return IDL.Service({
-          'health_check': IDL.Func([], [IDL.Text], ['query']),
           'get_messages': IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
           'add_message': IDL.Func([IDL.Text], [], []),
           'clear_messages': IDL.Func([], [], []),
@@ -31,18 +30,14 @@ async function initializeBackend() {
 
 let chatHistory = [];
 
-async function checkBackendHealth() {
+async function checkBackendConnection() {
   try {
     await initializeBackend();
-    const health = await backend.health_check();
-    if (health === "OK") {
-      document.getElementById('chatInterface').style.display = 'block';
-      loadChatHistory();
-    } else {
-      throw new Error("Backend health check failed");
-    }
+    await backend.get_messages();
+    document.getElementById('chatInterface').style.display = 'block';
+    loadChatHistory();
   } catch (error) {
-    console.error("Error checking backend health:", error);
+    console.error("Error checking backend connection:", error);
     document.getElementById('errorMessage').textContent = "Failed to connect to the backend. Please try again later.";
   }
 }
@@ -94,7 +89,7 @@ async function clearChat() {
 }
 
 window.onload = () => {
-  checkBackendHealth().catch(error => {
+  checkBackendConnection().catch(error => {
     console.error("Failed to initialize application:", error);
     document.getElementById('errorMessage').textContent = "Failed to initialize application. Please refresh the page and try again.";
   });

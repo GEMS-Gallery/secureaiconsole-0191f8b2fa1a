@@ -2,5 +2,4 @@ service : {
   add_message: (text) -> ();
   clear_messages: () -> ();
   get_messages: () -> (vec text) query;
-  health_check: () -> (text) query;
 }
